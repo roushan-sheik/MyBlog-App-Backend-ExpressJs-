@@ -1,0 +1,803 @@
+openapi: "3.0.2"
+info:
+  title: My-Blog-App
+  version: "1.0.0"
+  contact:
+    name: Programmer Rowshan
+    url: pgrowshan.com
+    email: roushansheikh@gmail.com
+servers:
+  - url: http://localhost:3000/api/v1
+    description: Dev
+
+tags:
+  - name: Auth
+    description: Authentication endpoints (Public).
+  - name: Post
+    description: Post endpoints (Public and Privet).
+  - name: Comment
+    description: Comment endpoints (Privet).
+  - name: User
+    description: User endpoints (admin only)
+paths:
+  "/auth/signup":
+    post:
+      tags: [Auth]
+      requestBody:
+        content:
+          "application/json":
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                  example: Arifa Moni
+                email:
+                  type: string
+                  format: email
+                  example: arifamoni@gmail.com
+                password:
+                  type: string
+                  format: password
+                  example: 1234arifa56
+              required:
+                - "name"
+                - "email"
+                - "password"
+      responses:
+        "201":
+          description: Signup successfull.
+          content:
+            "application/json":
+              schema:
+                type: object
+                properties:
+                  code:
+                    type: integer
+                    format: int32
+                    example: 201
+                  message:
+                    type: string
+                    example: Signup successfull
+                  data:
+                    type: object
+                    properties:
+                      access_token:
+                        type: string
+                        example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c
+                  links:
+                    type: object
+                    properties:
+                      self:
+                        type: string
+                        example: "/auth/signup"
+                      signIn:
+                        type: string
+                        example: "/auth/signin"
+        "400":
+          $ref: "#/components/responses/400"
+        "500":
+          $ref: "#/components/responses/500"
+
+  "/auth/signin":
+    description: Signin to your account.
+    post:
+      tags:
+        - "Auth"
+      requestBody:
+        content:
+          "application/json":
+            schema:
+              type: object
+              properties:
+                email:
+                  type: string
+                  format: email
+                  example: tasmiya@gmail.com
+                password:
+                  type: string
+                  format: password
+                  example: 1234arifa56
+              required:
+                - "email"
+                - "password"
+      responses:
+        "200":
+          description: Signin successfull
+          content:
+            "application/json":
+              schema:
+                type: object
+                properties:
+                  code:
+                    type: integer
+                    format: int32
+                    example: 200
+                  message:
+                    type: string
+                    example: SignIn successfull
+                  data:
+                    type: object
+                    properties:
+                      data:
+                        type: string
+                        example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c
+                  links:
+                    type: object
+                    properties:
+                      self:
+                        type: string
+                        example: "/auth/signin"
+        "400":
+          $ref: "#/components/responses/400"
+        "500":
+          $ref: "#/components/responses/500"
+
+  "/posts":
+    get:
+      description: Retrive all published posts.
+      tags:
+        - "Post"
+      parameters:
+        - $ref: "#/components/parameters/pageParam"
+        - $ref: "#/components/parameters/limitParam"
+        - $ref: "#/components/parameters/sortTypeParam"
+        - $ref: "#/components/parameters/sortByParam"
+        - $ref: "#/components/parameters/searchParam"
+      responses:
+        "200":
+          description: Return a list of Posts
+          content:
+            "application/json":
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      allOf:
+                        - type: object
+                          properties:
+                            id:
+                              type: integer
+                              format: int32
+                              example: 1
+                            title:
+                              type: string
+                              example: first article
+                            cover:
+                              type: string
+                              format: url
+                              example: https://pixels.com/photos/1234
+                            author:
+                              $ref: "#/components/schemas/AuthorDTO"
+                            links:
+                              type: string
+                              format: url
+                              example: "posts/1"
+
+                        - $ref: "#/components/schemas/Timestamp"
+                  Pagination:
+                    $ref: "#components/schemas/Pagination"
+                  links:
+                    type: object
+                    properties:
+                      self:
+                        type: integer
+                        format: url
+                        example: "/posts?page=2&limit=10"
+                      prev:
+                        type: integer
+                        format: url
+                        example: "/posts?page=1&limit=10"
+                      next:
+                        type: integer
+                        format: url
+                        example: "/posts?page=3&limit=10"
+        "400":
+          $ref: "#/components/responses/400"
+        "500":
+          $ref: "#/components/responses/500"
+    post:
+      operationId: createPost
+      security:
+        - bearerAuth: []
+
+      tags:
+        - "Post"
+      description: Create a new Post
+      requestBody:
+        description: To create a new post user must have to provide valid data.
+        content:
+          "application/json":
+            schema:
+              type: object
+              properties:
+                title:
+                  type: string
+                  example: This is my first Post
+                body:
+                  type: string
+                  format: text
+                  example: Body of the firs Post that you can see here.lorem ipsum doller emmit
+                cover:
+                  type: string
+                  format: url
+                  example: https://pixels.com/photos/1234
+                status:
+                  type: string
+                  enum: [draft, published]
+                  example: draft
+              required:
+                - "title"
+                - "body"
+      responses:
+        "201":
+          description: Successfully created a new post.
+          content:
+            "application/json":
+              schema:
+                type: object
+                properties:
+                  code:
+                    type: string
+                    format: int32
+                    example: 201
+                  message:
+                    type: string
+                    example: Post created Successfully
+                  data:
+                    $ref: "#/components/schemas/Post"
+                  links:
+                    type: object
+                    properties:
+                      self:
+                        type: string
+                        format: url
+                        example: "posts/1"
+                      author:
+                        type: string
+                        format: url
+                        example: "posts/1/author"
+                      comment:
+                        type: string
+                        format: url
+                        example: "posts/1/comment"
+        "400":
+          $ref: "#/components/responses/400"
+        "401":
+          $ref: "#/components/responses/401"
+        "500":
+          $ref: "#/components/responses/500"
+
+  "/posts/{id}":
+    get:
+      tags:
+        - "Post"
+      description: Fetch a single post
+      parameters:
+        - in: path
+          name: id
+          required: true
+          description: Article ID
+          schema:
+            type: integer
+            format: int32
+            example: 1
+        - in: query
+          name: expand
+          description: expand author and comment object
+          schema:
+            type: string
+            example: "author, comment"
+
+      responses:
+        "200":
+          description: "Single post view"
+          content:
+            "application/json":
+              schema:
+                type: object
+                properties:
+                  data:
+                    allOf:
+                      - $ref: "#/components/schemas/Post"
+                      - type: object
+                        properties:
+                          author:
+                            $ref: "#/components/schemas/AuthorDTO"
+                      - type: object
+                        properties:
+                          comments:
+                            type: array
+                            items:
+                              $ref: "#/components/schemas/Comment"
+
+                  links:
+                    type: object
+                    properties:
+                      self:
+                        type: string
+                        example: "/posts/1"
+                      author:
+                        type: string
+                        example: "/article/1/comment"
+
+        "400":
+          $ref: "#/components/responses/400"
+        "404":
+          $ref: "#/components/responses/404"
+        "500":
+          $ref: "#/components/responses/500"
+    put:
+      security:
+        - bearerAuth: []
+
+      tags:
+        - "Post"
+      description: Create or update entire article
+      parameters:
+        - in: path
+          name: id
+          required: true
+          description: Article ID
+          schema:
+            type: integer
+            format: int32
+            example: 1
+      requestBody:
+        content:
+          "application/json":
+            schema:
+              type: object
+              properties:
+                id:
+                  type: integer
+                  format: int32
+                  example: 1
+                title:
+                  type: string
+                  example: post title
+                body:
+                  type: string
+                  format: text
+                  example: post body
+                cover:
+                  type: string
+                  format: url
+                  example: https://pixels.com/photos/1234
+                status:
+                  type: string
+                  enum: [draft, published]
+                  example: draft
+              required:
+                - "title"
+                - "body"
+      responses:
+        "200":
+          description: "Successfully updated"
+          content: &article_update_content
+            "application/json":
+              schema:
+                type: object
+                properties:
+                  code:
+                    type: integer
+                    format: int32
+                    example: 200
+                  message:
+                    type: string
+                    example: Post updated Successfully
+                  data:
+                    $ref: "#/components/schemas/Post"
+
+                  links:
+                    type: object
+                    properties:
+                      self:
+                        type: string
+                        example: "/posts/1"
+
+        "201":
+          description: Successfully Created
+          content:
+            "application/json":
+              schemas:
+                $ref: "#/components/schemas/PostDTO"
+
+        "400":
+          $ref: "#/components/responses/400"
+        "401":
+          $ref: "#/components/responses/401"
+        "404":
+          $ref: "#/components/responses/404"
+        "500":
+          $ref: "#/components/responses/500"
+    patch:
+      security:
+        - bearerAuth: []
+
+      tags:
+        - "Post"
+      description: Partially update an article
+      parameters:
+        - in: path
+          name: id
+          required: true
+          description: Article ID
+          schema:
+            type: integer
+            format: int32
+            example: 1
+      requestBody:
+        content:
+          "application/json":
+            schema:
+              type: object
+              properties:
+                title:
+                  type: string
+                  example: post title
+                body:
+                  type: string
+                  format: text
+                  example: post body
+                cover:
+                  type: string
+                  format: url
+                  example: https://pixels.com/photos/1234
+                status:
+                  type: string
+                  enum: [draft, published]
+                  example: draft
+      responses:
+        "200":
+          description: "Successfully updated"
+          content:
+            "application/json":
+              schema:
+                type: object
+                properties:
+                  code:
+                    type: integer
+                    format: int32
+                    example: 200
+                  message:
+                    type: string
+                    example: Post updated Successfully
+                  data:
+                    $ref: "#/components/schemas/Post"
+
+                  links:
+                    type: object
+                    properties:
+                      self:
+                        type: string
+                        example: "/posts/1"
+
+        "400":
+          $ref: "#/components/responses/400"
+        "401":
+          $ref: "#/components/responses/401"
+        "404":
+          $ref: "#/components/responses/404"
+        "500":
+          $ref: "#/components/responses/500"
+    delete:
+      tags:
+        - "Post"
+      description: Delete an article by id
+      parameters:
+        - in: path
+          name: id
+          required: true
+          description: Article ID
+          example: 1
+
+      responses:
+        "204":
+          description: Post deleted Successfully
+        "401":
+          $ref: "#/components/responses/401"
+        "404":
+          $ref: "#/components/responses/404"
+        "500":
+          $ref: "#/components/responses/500"
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  schemas:
+    PostDTO:
+      type: object
+      properties:
+        code:
+          type: string
+          format: int32
+          example: 201
+        message:
+          type: string
+          example: Post created Successfully
+        data:
+          $ref: "#/components/schemas/Post"
+        links:
+          type: object
+          properties:
+            self:
+              type: string
+              format: url
+              example: "posts/1"
+            author:
+              type: string
+              format: url
+              example: "posts/1/author"
+            comment:
+              type: string
+              format: url
+              example: "posts/1/comment"
+    PostUpdateDTO:
+      type: object
+      properties:
+        code:
+          type: integer
+          format: int32
+          example: 200
+        message:
+          type: string
+          example: Post updated Successfully
+        data:
+          $ref: "#/components/schemas/Post"
+
+        links:
+          type: object
+          properties:
+            self:
+              type: string
+              example: "/posts/1"
+    Post:
+      allOf:
+        - type: object
+          properties:
+            id:
+              type: string
+              format: int32
+              example: 1
+            authorId:
+              type: string
+              format: int32
+              example: 2
+            title:
+              type: string
+              example: First Post
+            body:
+              type: string
+              format: text
+              example: The body of the first post. you are welcome.
+            cover:
+              type: string
+              format: url
+              example: www.pixels/photo/234.com
+            status:
+              type: string
+              enum:
+                - draft
+                - published
+              example: draft
+          required:
+            - "id"
+            - "authorId"
+            - "title"
+            - "body"
+            - "status"
+        - $ref: "#/components/schemas/Timestamp"
+    Comment:
+      allOf:
+        - type: object
+          properties:
+            id:
+              type: string
+              format: int32
+              example: 1
+            authorId:
+              type: string
+              format: int32
+              example: 2
+            postId:
+              type: string
+              format: int32
+              example: 2
+            body:
+              type: string
+              format: text
+              example: The body of the first Comment. you are welcome.
+            status:
+              type: string
+              enum:
+                - public
+                - private
+              example: public
+          required:
+            - "id"
+            - "authorId"
+            - "postId"
+            - "body"
+            - "status"
+        - $ref: "#/components/schemas/Timestamp"
+    Timestamp:
+      type: object
+      properties:
+        createdAt:
+          type: string
+          format: datetime
+        updatedAt:
+          type: string
+          format: datetime
+      required: [createdAt, updatedAt]
+    AuthorDTO:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int32
+          example: 1
+        name:
+          type: string
+          example: "Arifa Moni"
+      required:
+        - "id"
+        - "name"
+    Pagination:
+      type: object
+      properties:
+        page:
+          type: integer
+          format: int32
+          example: 2
+        limit:
+          type: integer
+          format: int32
+          example: 10
+        next:
+          type: integer
+          format: int32
+          example: 3
+        prev:
+          type: integer
+          format: int32
+          example: 2
+        totalPage:
+          type: integer
+          format: int32
+          example: 20
+        totalItems:
+          type: integer
+          format: int32
+          example: 50
+      required:
+        - "page"
+        - "limit"
+        - "totalPage"
+        - "totalItems"
+  responses:
+    "500":
+      description: Internal Server Error.
+      content:
+        "application/json":
+          schema:
+            type: object
+            properties:
+              code:
+                type: integer
+                format: int32
+                example: 500
+              error:
+                type: string
+                example: Internal Server Error.
+              message:
+                type: string
+                example: We are sorry for the enconvinience. Please try again later.
+    "400":
+      description: Bad request.
+      content:
+        "application/json":
+          schema:
+            type: object
+            properties:
+              code:
+                type: integer
+                format: int32
+                example: 400
+              error:
+                type: string
+                example: Bad request.
+              data:
+                type: array
+                items:
+                  properties:
+                    field:
+                      type: string
+                      example: email
+                    message:
+                      type: string
+                      example: Invalid email
+                    in:
+                      type: string
+                      enum: [query, body]
+                      example: body
+    "401":
+      description: Unauthorized
+      content:
+        "application/json":
+          schema:
+            type: object
+            properties:
+              code:
+                type: integer
+                format: int32
+                example: 401
+              error:
+                type: string
+                example: Unauthorized
+              message:
+                type: string
+                example: you dont have the right permission.
+    "404":
+      description: Resource not found
+      content:
+        "application/json":
+          schema:
+            type: object
+            properties:
+              code:
+                type: integer
+                format: int32
+                example: 404
+              error:
+                type: string
+                example: Not Found
+              message:
+                type: string
+                example: Requested resource not found.
+
+  parameters:
+    pageParam:
+      in: query
+      name: page
+      description: Current page number
+      schema:
+        type: integer
+        format: int32
+        example: 2
+    limitParam:
+      in: query
+      name: limit
+      description: Maximum limit to be returned
+      schema:
+        type: integer
+        format: int32
+        example: 10
+    sortTypeParam:
+      in: query
+      name: sort_type
+      description: type of sort (asc or dsc)
+      schema:
+        type: string
+        enum: [asc, dec]
+        example: dec
+    sortByParam:
+      in: query
+      name: sort_by
+      description: sort key
+      schema:
+        type: string
+        example: updatedAt
+    searchParam:
+      in: query
+      name: search
+      description: Search term
+      schema:
+        type: string
+        example: title

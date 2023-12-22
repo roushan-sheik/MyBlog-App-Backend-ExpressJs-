@@ -1,0 +1,36 @@
+{
+  "users": ["first user"],
+  "posts": [
+    {
+      "id": "1",
+      "authorId": "1",
+      "title": "This is my first Post",
+      "body": "Body of the firs Post that you can see here.lorem ipsum doller emmit",
+      "cover": "https://pixels.com/photos/1234",
+      "status": "draft",
+      "createdAt": "2023-10-04T16:01:37.601Z",
+      "updatedAt": "2023-10-04T16:01:37.601Z"
+    },
+    {
+      "id": "2",
+      "authorId": "2",
+      "title": "This is my 2nd Post",
+      "body": "Body of the firs Post that you can see here.lorem ipsum doller emmit",
+      "cover": "https://pixels.com/photos/1234",
+      "status": "draft",
+      "createdAt": "2023-10-05T01:28:44.298Z",
+      "updatedAt": "2023-10-05T01:28:44.298Z"
+    },
+    {
+      "id": "3",
+      "authorId": "3",
+      "title": "Third Post",
+      "body": "Body of the 3rd Post that you can see here.lorem ipsum doller emmit",
+      "cover": "https://pixels.com/photos/1234",
+      "status": "draft",
+      "createdAt": "2023-10-05T01:12:43.205Z",
+      "updatedAt": "2023-10-05T01:12:43.205Z"
+    }
+  ],
+  "comments": ["firs comments"]
+}

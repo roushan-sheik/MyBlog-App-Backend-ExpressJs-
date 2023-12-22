@@ -1,0 +1,21 @@
+openapi: "3.0.2"
+info:
+  title: My-Blog-App
+  version: "1.0.0"
+  contact:
+    name: Programmer Rowshan
+    url: pgrowshan.com
+    email: pgrowshan@gmail.com
+servers:
+  - url: http://localhost:3000
+    description: Development Mode
+paths:
+  /posts:
+    get:
+      responses:
+        "200":
+          description: ok
+
+tags:
+  - name: Auth
+    description: description endpoint.
